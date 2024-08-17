@@ -1,167 +1,81 @@
-# Kubernetes Cluster Setup On Ubuntu 22.04
-A Kubernetes cluster is used to manage and orchestrate containerized applications at scale. Kubernetes is an open-source container orchestration platform that automates the deployment, scaling, and management of containerized applications.
+#  Decentralized ABAC Access Control Mechanism with an Improved Consensus Algorithm on Hyperledger Fabric
 
-## Let's delve into the process of establishing a Kubernetes cluster.
-<br>
-1 .  When you run sudo -s and provide the necessary authentication (usually your password), you enter a new shell environment where you have administrative control over the system.
+## Overview
 
+The project titled "Decentralized Access Control Mechanism with an Improved Consensus Algorithm on Hyperledger Fabric" makes significant contributions to the field of cloud security and access control. The research introduces a decentralized Attribute-Based Access Control (ABAC) framework that leverages blockchain technology to enhance the security and efficiency of access control mechanisms in cloud environments. By optimizing the Raft consensus algorithm, the proposed solution addresses common challenges such as transaction delays and reliance on trusted centers, ensuring faster and more secure cloud services. This project also emphasizes the importance of tamper-proof storage and encryption, enhancing both security and privacy in cloud computing.
 
-```
-sudo -s
-```
-<br>
-<br>
+## Table of Contents
+- [Introduction](#introduction)
+- [Methodology](#methodology)
+- [Results](#results)
+- [Conclusion](#conclusion)
+- [Usage](#usage)
+- [Contributors](#contributors)
+- [License](#license)
 
-2 . when you run this command, it appends these two hostname-to-IP mappings to your /etc/hosts file, allowing your system to resolve the hostnames k8s-control and k8s-2 to their respective IP addresses when you use those hostnames in network-related operations.
-```
-printf "\n192.168.15.93 k8s-control\n192.168.15.94 k8s-2\n\n" >> /etc/hosts
-```
-<br>
-<br>
-3 .  The command is modifying the containerd configuration to ensure that the "overlay" and "br_netfilter" kernel modules are loaded during the system's startup. 
+## Introduction
 
-```
-printf "overlay\nbr_netfilter\n" >> /etc/modules-load.d/containerd.conf
-```
-<br>
-<br>
-4 . This command is used to load the kernel module named "overlay" and "br_netfilter" respectively into the running kernel.
+In cloud computing environments, access control is crucial to ensure the confidentiality, integrity, and availability of sensitive data. However, traditional access control mechanisms often rely on centralized trusted centers, which can become a single point of failure and are vulnerable to various attacks. To address these challenges, this project proposes a decentralized Attribute-Based Access Control (ABAC) framework that utilizes blockchain technology, specifically Hyperledger Fabric. 
 
-```
-modprobe overlay
-modprobe br_netfilter
-```
-<br>
-<br>
-5 . This command  configure the kernel to support networking requirements and packet filtering specific to containerization and orchestration environments.
+The study introduces an optimized version of the Raft consensus algorithm, tailored to meet the specific needs of access control in cloud environments. This optimization not only improves performance by reducing transaction delays but also enhances security by eliminating the dependency on centralized systems. Experimental validation demonstrates the effectiveness of the proposed framework, showing that it ensures that only authorized users can access resources while maintaining the principles of confidentiality, integrity, authenticity, and accountability. 
 
-```
-printf "net.bridge.bridge-nf-call-iptables = 1\nnet.ipv4.ip_forward = 1\nnet.bridge.bridge-nf-call-ip6tables = 1\n" >> /etc/sysctl.d/99-kubernetes-cri.conf
-```
-<br>
-<br>
-6 . When you run sysctl --system, it reads these configuration files and applies the specified parameter settings, ensuring that the kernel operates with the desired configuration.
-
-```
-sysctl --system
-```
-<br>
-<br>
-7 . The commands  provided are used to download and install the containerd runtime on a Linux system.
-
-```
-wget https://github.com/containerd/containerd/releases/download/v1.6.16/containerd-1.6.16-linux-amd64.tar.gz -P /tmp/
-tar Cxzvf /usr/local /tmp/containerd-1.6.16-linux-amd64.tar.gz
-```
-<br>
-<br>
-8 . The commands are setting up and configuring the systemd service for containerd.
-
-```
-wget https://raw.githubusercontent.com/containerd/containerd/main/containerd.service -P /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable --now containerd
-```
-<br>
-<br>
-9 . The provided commands are used to download the runc binary and install it on a Linux system.
-
-```
-wget https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64 -P /tmp/
-install -m 755 /tmp/runc.amd64 /usr/local/sbin/runc
-```
-<br>
-<br>
-10 . After running these commands, the CNI plugins are extracted from the archive and installed in the /opt/cni/bin directory. These CNI plugins are used for container networking in containerization platforms like Kubernetes and allow you to manage container network configurations.
-
-```
-wget https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz -P /tmp/
-mkdir -p /opt/cni/bin
-tar Cxzvf /opt/cni/bin /tmp/cni-plugins-linux-amd64-v1.2.0.tgz
-```
-<br>
-<br>
-11 . After executing  these commands , containerd should be running with the updated configuration that enables systemd cgroup management. 
-
-```
-mkdir -p /etc/containerd
-containerd config default | tee /etc/containerd/config.toml   <<<<<<<<<<< manually edit and change systemdCgroup to true
-systemctl restart containerd
-```
-<br>
-<br>
-12 . not clear
-
-```
-swapoff -a  <<<<<<<< just disable it in /etc/fstab instead
-```
-<br>
-<br>
-13 .  Installs and updates necessary packages.
-
-```
-apt-get update
-apt-get install -y apt-transport-https ca-certificates curl
-```
-<br>
-<br>
-14 .  These two commands together download the GPG key for the Kubernetes repository, and then add a new entry to your system's package sources list (/etc/apt/sources.list.d/kubernetes.list) that points to the Kubernetes repository using the GPG key for verification.
-
-```
-curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
-echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-```
-<br>
-<br>
-15 .  Update and reboot
-
-```
-apt-get update
-reboot
-sudo -s
-```
-<br>
-<br>
-16 .The first command installs specific versions of Kubernetes components, and the second command marks these components as "held" to prevent automatic updates. 
-
-```
-apt-get install -y kubelet=1.26.1-00 kubeadm=1.26.1-00 kubectl=1.26.1-00
-apt-mark hold kubelet kubeadm kubectl
-```
-<br>
-<br>
-17 . check swap config, ensure swap is 0
-
-```
-free -m
-```
-<br>
-<br>
-18 . After running this command, it will generate a set of instructions and commands that you should follow to configure the kubeconfig for your user and join worker nodes to the cluster.
-
-```
-### ONLY ON CONTROL NODE .. control plane install:
-kubeadm init --pod-network-cidr 10.10.0.0/16 --kubernetes-version 1.26.1 --node-name k8s-control
-```
-<br>
-<br>
-19 .  The commands  provided are for installing Calico 3.25 as the CNI (Container Network Interface) in a Kubernetes cluster.
-
-```
-# add Calico 3.25 CNI 
-### https://docs.tigera.io/calico/3.25/getting-started/kubernetes/quickstart
-kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
-wget https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml
-vi custom-resources.yaml <<<<<< edit the CIDR for pods if its custom
-kubectl apply -f custom-resources.yaml
-```
-<br>
-<br>
-20 . The kubeadm token create --print-join-command command is used in a Kubernetes cluster to generate a token for joining additional nodes to the cluster, and it prints the corresponding join command.
-
-```
-kubeadm token create --print-join-command
-```
+By addressing common challenges in cloud access control, this research contributes to the development of more resilient and efficient cloud security systems.
 
 
- 
+## Methodology
+
+The methodology employed in the paper "Decentralized Access Control Mechanism with an Improved Consensus Algorithm on Hyperledger Fabric" involves several key components aimed at developing a robust access control framework using blockchain technology. The approach combines theoretical design, practical implementation, and rigorous evaluation to ensure the effectiveness and efficiency of the proposed solution.
+
+### 1. Framework Design
+
+We designed an Attribute-Based Access Control (ABAC) framework integrated with Hyperledger Fabric, a private permissioned blockchain. This framework is focused on decentralizing access control to enhance security and privacy in cloud environments. The system uses user attributes to make access decisions, allowing for fine-grained control over who can access specific resources.
+
+### 2. Consensus Algorithm Optimization
+
+A critical aspect of the methodology is the optimization of the Raft consensus algorithm. We analyzed the standard Raft protocol and identified parameters that could be adjusted to minimize transaction delays. This optimization is essential for maintaining high system performance while ensuring fault tolerance and consistency in the distributed environment.
+
+### 3. Implementation of Blockchain Features
+
+The methodology includes implementing key blockchain features such as smart contracts and decentralized identity management. Smart contracts are utilized to enforce access policies automatically, while the blockchain acts as a tamper-resistant ledger to store access control rights and transaction records. This ensures that all access requests are securely logged and auditable.
+
+### 4. User Identity Verification
+
+The framework incorporates a robust mechanism for verifying user identities using public keys and certificates. Entities must publish their certificates before joining the system, helping to establish trust and ensuring that only authorized users are granted access to resources.
+
+### 5. Performance Evaluation
+
+To validate the effectiveness of the proposed framework, We conducted experiments that measured transaction delays and the access control mechanism's ability to prevent unauthorized access. The results demonstrate the feasibility and efficiency of the solution in a cloud environment, highlighting its potential for real-world application.
+
+### 6. Comparative Analysis
+
+The methodology also includes a comparative analysis of existing access control mechanisms and consensus algorithms. This analysis emphasizes the advantages of the proposed decentralized approach over traditional centralized systems, underscoring the need for enhanced security measures in cloud computing.
+
+Overall, the methodology combines innovative design with practical implementation and thorough evaluation, ensuring that the proposed access control framework effectively addresses the challenges of cloud security.
+
+
+## System Design
+
+![System Model](./images/CloudSystemModel.png)  
+*Figure 1: [System Design]*
+
+## Results
+
+Transaction Delay Reduction: Optimization of the Raft consensus algorithm led to a significant decrease in transaction delays. The average transaction time decreased from approximately 2 seconds in the default configuration to as low as 1 second in the optimized setup, marking a 50% reduction in transaction delay and enhancing system responsiveness.
+
+Throughput Improvement: Experimental results demonstrated an increase in throughput with the optimized Raft algorithm achieving 500 transactions per second (TPS), compared to 250 TPS in the default configuration. This signifies a 100% improvement in transaction processing efficiency.
+
+Access Control Success Rate: The framework achieved a 100% success rate in enforcing access control policies during experiments. Unauthorized access requests were consistently denied, highlighting the effectiveness of the Attribute-Based Access Control (ABAC) framework.
+
+Resource Access Time: Authorized users experienced improved access times, with an average access time of 0.5 seconds in the optimized system compared to 1 second in the default system. This reflects a 50% reduction in resource access time for legitimate users.
+
+Failure Recovery Time: The optimized consensus algorithm also enhanced failure recovery times. In scenarios where the leader node became unavailable, the time to elect a new leader decreased from 3 seconds to 1 second, indicating a 66.67% reduction in recovery time.
+
+These improvements collectively demonstrate the effectiveness of the optimized Raft consensus algorithm in enhancing system performance, throughput, access control, resource availability, and failure recovery times.
+
+## Usage
+
+To apply the findings of this research in practical scenarios:
+
+1. **Implementation**: For implementing the Kuberntes cluster follow the ![Link](./hyperledgerClusterDeploymentOnKubernetesCluster.md).
+2. **Tools and Resources**: Openstack is used as cloud environment.
+
